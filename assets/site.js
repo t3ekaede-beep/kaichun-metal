@@ -3,6 +3,25 @@
   const cur = document.querySelector('nav.main [aria-current="page"]');
   if (cur && cur.offsetLeft + cur.offsetWidth > cur.parentElement.clientWidth) cur.parentElement.scrollLeft = cur.offsetLeft - 16;
 
+  // 車款照片：維基偶爾一次擋太多張，失敗就等一下重試一次，再失敗換成剪影
+  const sil = () => {
+    const d = document.createElement('div');
+    d.innerHTML = '<svg class="sil" viewBox="0 0 300 110" aria-hidden="true"><use href="#sil"/></svg>';
+    return d.firstChild;
+  };
+  const retry = img => {
+    if (!img.dataset.retry) {
+      img.dataset.retry = '1';
+      setTimeout(() => { img.src = img.src + '&retry=1'; }, 1500 + Math.random() * 2000);
+    } else {
+      img.replaceWith(sil());
+    }
+  };
+  for (const img of document.querySelectorAll('.ph img')) {
+    img.addEventListener('error', () => retry(img));
+    if (img.complete && img.naturalWidth === 0 && img.getAttribute('src')) retry(img);
+  }
+
   // 複製詢價格式（客戶須知頁）
   const cb = document.getElementById('copyBtn');
   if (cb) {

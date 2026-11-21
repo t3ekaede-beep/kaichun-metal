@@ -42,7 +42,7 @@ def line_msg(text):
     return f"https://line.me/R/oaMessage/{urllib.parse.quote(LINE_ID)}/?{urllib.parse.quote(text)}"
 
 
-def photo_url(file, width=480):
+def photo_url(file, width=500):   # 500 是維基的標準縮圖尺寸，快取命中比較快
     return f"https://commons.wikimedia.org/wiki/Special:FilePath/{urllib.parse.quote(file)}?width={width}"
 
 
@@ -52,7 +52,7 @@ SIL = '<svg class="sil" viewBox="0 0 300 110" aria-hidden="true"><use href="#sil
 def photo(m, alt, root=""):
     if m and m.get("photo"):
         return (f'<img src="{e(photo_url(m["photo"]))}" alt="{e(alt)}" loading="lazy" decoding="async" '
-                f'width="480" height="360" referrerpolicy="no-referrer">')
+                f'width="500" height="375" referrerpolicy="no-referrer">')
     return SIL
 
 
