@@ -5,7 +5,8 @@
 
 公開規則（改這裡之前先想清楚）：
 - 不輸出車牌、車主、電話、證件、收購價、成交價、差價、筆數。
-- 場內車只列「盤點＝在場內」或「還沒盤點但從車場 App 新進場」的車；待盤點、不在場內、取消的不列。
+- 場內車：盤點＝在場內（車輛位置寫已經離開的除外），或還沒盤點但車輛位置是場內待拆／拆解中／待出口
+  （車場 App 新進場的車）。待盤點、不在場內、取消的不列。
 - 測試車、範例車牌不列。
 """
 
@@ -27,6 +28,7 @@ DS_MARKET = "41f27874-3256-81d4-b8e7-000bd7a1b2b7"  # 車款行情（熱銷分�
 DS_BRANDS = "5d1e7a8d-402f-4aca-ab85-a77023cfd693"  # 品牌
 
 IN_YARD = ["場內待拆", "拆解中", "待出口"]
+GONE = ["車主處", "拖運中", "已拆完", "已清運", "待交車", "已交車", "已出口"]
 TEST_PLATE = re.compile(r"^(TEST|示範|範例)|^ABC-?1234$", re.I)
 TEST_NOTE = re.compile(r"虛構|測試|範例|示範")
 UNSURE = re.compile(r"確認|推測")
@@ -35,6 +37,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # ---------- Notion API ----------
+
+class NotionError(Exception):
+    pass
+
 
 def api(path, body=None):
     token = os.environ.get("NOTION_TOKEN", "").strip()
@@ -55,7 +61,7 @@ def api(path, body=None):
             return json.loads(r.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")[:500]
-        sys.exit(f"Notion API 錯誤 {e.code} {path}：{detail}")
+        raise NotionError(f"Notion API 錯誤 {e.code} {path}：{detail}")
 
 
 def query_all(ds_id, flt=None):
@@ -220,10 +226,14 @@ def build_inventory(case_pages, models):
         note = val(p, "備註") or ""
         if TEST_PLATE.search(plate) or TEST_NOTE.search(note):
             continue
-        if val(p, "盤點") in ("待盤點", "不在場內") or val(p, "目前關卡") == "取消":
+        check = val(p, "盤點")
+        if check in ("待盤點", "不在場內") or val(p, "目前關卡") == "取消":
             continue
         loc = val(p, "車輛位置")
-        if loc not in IN_YARD:
+        if check == "在場內":
+            if loc in GONE:
+                continue
+        elif loc not in IN_YARD:
             continue
 
         spec = val(p, "車種年份") or ""
@@ -237,6 +247,7 @@ def build_inventory(case_pages, models):
             y = re.search(r"(19|20)\d{2}", spec + " " + intake)
             year = int(y.group(0)) if y else None
         info = by_name.get(model or "", {})
+        brand = val(p, "品牌")
 
         ref = val(p, "場內編號")
         ref = str(int(ref)) if isinstance(ref, (int, float)) else val(p, "案件編號")
@@ -245,7 +256,7 @@ def build_inventory(case_pages, models):
         car = {
             "ref": ref,
             "model": model,
-            "brand": val(p, "品牌") if (val(p, "品牌") or "").isascii() and val(p, "品牌") else info.get("brand"),
+            "brand": brand if brand and brand.isascii() else info.get("brand"),
             "year": int(year) if year else None,
             "type": info.get("type"),
             "color": val(p, "顏色"),
@@ -265,18 +276,41 @@ def build_inventory(case_pages, models):
 
 
 def main():
-    brand_pages = query_all(DS_BRANDS)
     model_pages = query_all(DS_MODELS)
-    market_pages = query_all(DS_MARKET)
+    try:
+        brand_pages = query_all(DS_BRANDS)
+    except NotionError as err:
+        print("警告：品牌表讀不到，沿用上一版的品牌資料。", err)
+        brand_pages = []
+    try:
+        market_pages = query_all(DS_MARKET)
+    except NotionError as err:
+        print("警告：車款行情讀不到，常有／偶爾有沿用上一版。", err)
+        market_pages = None
     case_filter = {"and": [
         {"property": "盤點", "select": {"does_not_equal": "待盤點"}},
         {"property": "盤點", "select": {"does_not_equal": "不在場內"}},
         {"property": "目前關卡", "status": {"does_not_equal": "取消"}},
-        {"or": [{"property": "車輛位置", "select": {"equals": v}} for v in IN_YARD]},
     ]}
     case_pages = query_all(DS_CASES, case_filter)
 
-    models = build_models(brand_pages, model_pages, market_pages)
+    models = build_models(brand_pages, model_pages, market_pages or [])
+    previous = {}
+    try:
+        with open(os.path.join(ROOT, "data", "models.json"), encoding="utf-8") as f:
+            previous = {m["name"]: m for m in json.load(f).get("models", [])}
+    except (OSError, ValueError):
+        pass
+    for m in models:
+        old = previous.get(m["name"], {})
+        if not brand_pages:
+            for k in ("brand", "brand_zh", "group"):
+                m[k] = m[k] or old.get(k)
+        if market_pages is None:
+            for k in ("tier", "export_whole", "export_engine"):
+                m[k] = old.get(k, m[k])
+    if market_pages is None:
+        models.sort(key=lambda x: (-x["tier"], x["name"]))
     parts, export = build_inventory(case_pages, models)
     now = datetime.now(TW).isoformat(timespec="minutes")
 
