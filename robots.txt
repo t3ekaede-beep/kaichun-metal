@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://t3ekaede-beep.github.io/kaichun-metal/sitemap.xml
