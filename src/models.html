@@ -1,0 +1,16 @@
+<section class="page-head"><div class="wrap">
+  <h1>常收車款</h1>
+  <p>這 {{N_MODELS}} 款車我們都收過，越前面的越常有。點「LINE 問零件」會帶好車款，你補上年份和要的零件就好。</p>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <div class="filters" data-target="#models">
+    <input type="search" id="q" placeholder="搜尋車款或叫法，例如 ALTIS、喜美、森林人" aria-label="搜尋車款" autocomplete="off">
+    <div class="chips" data-key="brand" role="group" aria-label="品牌">{{BRAND_CHIPS}}</div>
+    <div class="chips" data-key="type" role="group" aria-label="車型">{{TYPE_CHIPS}}</div>
+  </div>
+  <p class="count" aria-live="polite"></p>
+  <div class="cards" id="models">{{MODELS_GRID}}</div>
+  <p class="empty-filter note" hidden>沒有符合的車款。這裡沒列的車也可能有，直接 LINE 問就好。</p>
+  <p class="credit">「常有」是我們經手最多的車款，「偶爾有」次之，沒標的是比較少見的。車款照片來自維基共享資源，版權屬各拍攝者，點照片下方的「出處」可以看作者和授權；之後會換成場內自己拍的照片。</p>
+</div></section>

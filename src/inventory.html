@@ -1,0 +1,20 @@
+<section class="page-head"><div class="wrap">
+  <h1>場內車源</h1>
+  <p>現在場內有哪些車，每天早上從車場系統自動更新。看到想要的，按「LINE 問這台」，訊息會帶好車子的編號。</p>
+  <p class="upd">資料更新：{{UPDATED}}</p>
+  <nav class="tabs" aria-label="車源分類"><a href="#parts-cars">零件車 <b>{{N_PARTS}}</b></a><a href="#export-cars">外銷整車 <b>{{N_EXPORT}}</b></a></nav>
+</div></section>
+
+<section class="band" id="parts-cars"><div class="wrap">
+  <div class="sec-head"><h2>零件車</h2><p class="lead">可以問零件的車。零件接單才拆，詢價時說要哪一個零件就好。</p></div>
+  {{INV_PARTS}}
+</div></section>
+
+<section class="band alt" id="export-cars"><div class="wrap">
+  <div class="sec-head"><h2>外銷整車</h2><p class="lead">可以整台賣到國外的車，出口文件我們辦。國外買家請看 <a href="en/">English page</a>。</p></div>
+  {{INV_EXPORT}}
+</div></section>
+
+<section class="band"><div class="wrap">
+  <p class="note">照片是同車款的參考照片，不是這台車本身。清單每天更新一次，實際有沒有、車況怎樣，以 LINE 回覆和現場為準。車款照片來自維基共享資源，版權屬各拍攝者。</p>
+</div></section>

@@ -1,0 +1,26 @@
+{
+ "updated": "2026-11-21T18:30+08:00",
+ "parts": [
+  {
+   "ref": "CAR-1151",
+   "model": "ALTIS",
+   "brand": "TOYOTA",
+   "year": 2003,
+   "type": "房車",
+   "color": null,
+   "condition": null,
+   "since": "2026-11"
+  },
+  {
+   "ref": "CAR-1149",
+   "model": "ALTIS",
+   "brand": "TOYOTA",
+   "year": 2003,
+   "type": "房車",
+   "color": null,
+   "condition": null,
+   "since": "2026-11"
+  }
+ ],
+ "export": []
+}

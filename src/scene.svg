@@ -1,0 +1,49 @@
+<svg class="scene" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice" role="img" aria-label="車場示意圖：疊放的車殼、夾車機、輪胎和鋁圈">
+    <defs>
+      <symbol id="car" viewBox="0 0 300 110">
+        <path fill="currentColor" d="M8 84V62q2-11 22-13l52-4 30-29q6-6 15-6h76q10 0 17 8l28 27 30 5q14 3 14 16v18z"/>
+        <path fill="#000" opacity=".12" d="M8 70h284v14H8z"/>
+        <path fill="#fff" opacity=".22" d="M30 50l52-4 30-29q6-6 15-6h76q10 0 17 8l4 4H128q-8 0-13 5l-28 27-57 4z"/>
+        <path fill="#1d2329" opacity=".78" d="M120 22l-26 25h66V22zm48 0v25h72l-22-21q-4-4-10-4z"/>
+        <circle cx="76" cy="84" r="25" fill="#1b1b1a"/><circle cx="234" cy="84" r="25" fill="#1b1b1a"/>
+      </symbol>
+      <symbol id="wh" viewBox="-30 -30 60 60">
+        <circle r="30" fill="#1c1c1b"/><circle r="19" fill="#cfd3d7"/><circle r="19" fill="none" stroke="#8d949b" stroke-width="2"/>
+        <g fill="#8d949b"><rect x="-2.5" y="-17" width="5" height="12" rx="2"/><rect x="-2.5" y="-17" width="5" height="12" rx="2" transform="rotate(72)"/><rect x="-2.5" y="-17" width="5" height="12" rx="2" transform="rotate(144)"/><rect x="-2.5" y="-17" width="5" height="12" rx="2" transform="rotate(216)"/><rect x="-2.5" y="-17" width="5" height="12" rx="2" transform="rotate(288)"/></g>
+        <circle r="5" fill="#6b7279"/><path d="M-19 -6a20 20 0 0 1 12-13" stroke="#fff" stroke-width="3" fill="none" opacity=".7"/>
+      </symbol>
+      <linearGradient id="gnd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3935"/><stop offset="1" stop-color="#22211f"/></linearGradient>
+    </defs>
+    <rect x="0" y="262" width="1200" height="38" fill="url(#gnd)"/>
+    <rect x="0" y="262" width="1200" height="3" fill="#57554f"/>
+    <g opacity=".9">
+      <ellipse cx="170" cy="266" rx="170" ry="8" fill="#000" opacity=".25"/>
+      <use href="#car" x="10" y="176" width="300" height="110" style="color:#7d8790"/>
+      <use href="#car" x="30" y="104" width="280" height="103" style="color:#a3554f"/>
+      <use href="#car" x="0" y="38" width="290" height="106" style="color:#96a0a8"/>
+    </g>
+    <ellipse cx="600" cy="268" rx="235" ry="9" fill="#000" opacity=".3"/>
+    <use href="#car" x="385" y="122" width="440" height="161" style="color:#3f6f9e"/>
+    <use href="#wh" x="461" y="217" width="74" height="74"/>
+    <use href="#wh" x="693" y="217" width="74" height="74"/>
+    <g transform="rotate(-3 640 170)">
+      <rect x="630" y="150" width="62" height="40" rx="3" fill="#fff" stroke="#171717" stroke-width="2"/>
+      <text x="661" y="180" text-anchor="middle" font-family="Archivo,sans-serif" font-weight="800" font-size="26" fill="#171717">128</text>
+    </g>
+    <g id="arm">
+      <path d="M1210 -10L930 60L640 96" stroke="#232220" stroke-width="30" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M1210 -10L930 60L640 96" stroke="#55534d" stroke-width="5" fill="none" stroke-linecap="round" transform="translate(0 -9)"/>
+      <circle cx="930" cy="60" r="20" fill="#3b3a36"/><circle cx="930" cy="60" r="7" fill="#f6c400"/>
+      <circle cx="640" cy="96" r="18" fill="#3b3a36"/>
+      <path d="M626 104q-46 14-56 46q-4 12 6 14q8-22 52-40z" fill="#232220"/>
+      <path d="M654 104q46 14 56 46q4 12-6 14q-8-22-52-40z" fill="#232220"/>
+    </g>
+    <g>
+      <ellipse cx="1000" cy="268" rx="120" ry="8" fill="#000" opacity=".3"/>
+      <rect x="900" y="238" width="170" height="28" rx="14" fill="#1f1f1e"/><rect x="900" y="246" width="170" height="5" fill="#3d3c39"/>
+      <rect x="912" y="210" width="150" height="28" rx="14" fill="#262625"/><rect x="912" y="218" width="150" height="5" fill="#44433f"/>
+      <rect x="922" y="182" width="132" height="28" rx="14" fill="#1f1f1e"/><rect x="922" y="190" width="132" height="5" fill="#3d3c39"/>
+      <use href="#wh" x="1078" y="182" width="90" height="90"/>
+      <rect x="840" y="236" width="56" height="28" rx="12" fill="#a9afb4"/><rect x="826" y="246" width="16" height="8" fill="#6f767c"/><rect x="894" y="246" width="16" height="8" fill="#6f767c"/><rect x="846" y="240" width="44" height="6" rx="3" fill="#fff" opacity=".45"/>
+    </g>
+  </svg>
