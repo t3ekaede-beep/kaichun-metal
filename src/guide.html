@@ -20,16 +20,10 @@
 
     <h3>詢價格式</h3>
     <div class="copybox">
-      <div class="copyhead"><b>複製後貼到 LINE，把空的地方填好</b><button type="button" id="copyBtn">複製格式</button></div>
-<pre id="fmt">【詢價】
-車款＋排氣量＋年份：例 ALTIS 1.8 2013
-要什麼零件：例 右前大燈
-數量：
-零件編號或照片：有的話一起傳
-自取或寄送：
-怎麼稱呼：</pre>
+      <div class="copyhead"><b>填好空的地方再傳，或直接按右邊的按鈕</b><span class="copyacts"><a class="btn sm dark" href="{{PARTS_LINE}}">直接用 LINE 傳</a><button type="button" id="copyBtn">複製格式</button></span></div>
+<pre id="fmt">{{FMT}}</pre>
     </div>
-    <p class="note">車款、排氣量、年份寫在最前面，我們查得最快。不知道排氣量就空著，傳一張整台車的照片也可以。 <span id="copyMsg" role="status"></span></p>
+    <p class="note">車款、排氣量、年份寫在最前面，我們查得最快。不知道排氣量就空著，傳一張整台車的照片也可以。按「直接用 LINE 傳」會打開 LINE，格式已經在輸入框裡，補完按送出就好。 <span id="copyMsg" role="status"></span></p>
 
     <h3>價錢怎麼算</h3>
     <div class="tbl"><table class="stack">

@@ -6,6 +6,7 @@
 import html
 import json
 import os
+import re
 import urllib.parse
 from datetime import datetime
 
@@ -15,6 +16,12 @@ LINE_ID = "@375juggy"
 LINE_ADD = "https://line.me/R/ti/p/" + LINE_ID
 MAP = ("https://www.google.com/maps/search/?api=1&query=%E9%96%8B%E7%BE%A4%E9%87%91%E5%B1%AC%E8%A1%8C"
        "&query_place_id=ChIJ3XGffF9tbjQRUe3NIeFh1gE")
+# 訪客統計（GoatCounter，不用 cookie、不記個資）。到 goatcounter.com 註冊後，把網站代碼填在這裡；
+# 空字串＝完全不載入統計，LINE 按鈕的計數標記也不會有作用。
+GOATCOUNTER = os.environ.get("GOATCOUNTER_CODE", "")
+# 詢價格式：客戶須知頁顯示的內容、一鍵 LINE 帶入的內容，都用這一份，改一處就好
+PARTS_FMT = ["【詢價】", "車款＋排氣量＋年份：{car}", "要什麼零件：", "數量：",
+             "零件編號或照片：有的話一起傳", "自取或寄送：", "怎麼稱呼："]
 MIN_SHOW = 5          # 一類車少於這個數字，就不列清單，改顯示「整理中」
 HOME_INV = 4          # 首頁顯示幾台
 HOME_MODELS = 14      # 首頁顯示幾款（電腦版剛好兩排）
@@ -40,6 +47,10 @@ def write(path, text):
 
 def line_msg(text):
     return f"https://line.me/R/oaMessage/{urllib.parse.quote(LINE_ID)}/?{urllib.parse.quote(text)}"
+
+
+def parts_fmt(car=""):
+    return "\n".join(PARTS_FMT).replace("{car}", car)
 
 
 def photo_url(file, width=500):   # 500 是維基的標準縮圖尺寸，快取命中比較快
@@ -85,7 +96,7 @@ def model_card(m):
     tier = f'<span class="tier">{TIER[m["tier"]]}</span>' if m.get("tier") in TIER else ""
     credit = f'<a class="credit-link" href="{e(m["photo_page"])}" rel="nofollow">出處</a>' if m.get("photo") else ""
     search = " ".join(x for x in [m["name"], m.get("alias"), m.get("brand"), m.get("brand_zh")] if x).lower()
-    msg = line_msg(f"我想問 {m['name']} 的零件。年份：　要的零件：")
+    msg = line_msg(parts_fmt(f"{m['name']}　年份："))
     return (f'<article class="card" data-search="{e(search)}" data-brand="{e(m.get("brand"))}" data-type="{e(m.get("type"))}">'
             f'<div class="ph">{photo(m, m["name"])}{tier}</div>'
             f'<div class="cb"><h3>{e(m["name"])}{alias}</h3><div class="meta">{e(meta)}</div>'
@@ -152,6 +163,18 @@ NAV_ZH = [("index.html", "首頁"), ("inventory.html", "場內車源"), ("models
 NAV_EN = [("#stock", "Export stock"), ("#how", "How to buy"), ("#contact", "Contact"), ("../", "中文")]
 
 
+def mark_clicks(text):
+    """給 LINE 連結加上點擊計數標記（有填 GoatCounter 代碼才會真的計數，沒填就是無害的屬性）。"""
+    def tag(m):
+        cls, href = m.group(1), m.group(2)
+        if "oaMessage" in href:
+            name = "line-ask-parts" if "%E3%80%90%E8%A9%A2%E5%83%B9" in href else "line-ask"
+        else:
+            name = "line-add"
+        return f'<a {cls}data-goatcounter-click="{name}" data-goatcounter-no-session="1" href="{href}"'
+    return re.sub(r'<a ((?:class="[^"]*" )?)href="(https://line\.me/[^"]*)"', tag, text)
+
+
 def layout(page, body, title, desc, root, lang="zh"):
     zh = lang == "zh"
     url = BASE + ("" if page == "index.html" else page)
@@ -159,15 +182,19 @@ def layout(page, body, title, desc, root, lang="zh"):
     links = "".join(
         f'<a href="{(root + h) if zh else h}"' + (' aria-current="page"' if h == page else "") + f'>{t}</a>'
         for h, t in nav)
-    line_btn = f'<a class="cta" href="{LINE_ADD}">{"LINE 詢價" if zh else "LINE"}</a>'
+    line_btn = mark_clicks(f'<a class="cta" href="{LINE_ADD}">{"LINE 詢價" if zh else "LINE"}</a>')
     alt = (f'<link rel="alternate" hreflang="zh-Hant-TW" href="{BASE}">'
            f'<link rel="alternate" hreflang="en" href="{BASE}en/">')
     contact = (CONTACT_ZH if zh else CONTACT_EN).replace("{{MAP}}", e(MAP)).replace("{{LINE_ADD}}", LINE_ADD)
     foot = (f'<footer class="ft"><div class="wrap"><span>開群金屬行｜高雄市阿蓮區中正路 16 巷 3-90 號</span>'
             f'<nav aria-label="頁尾">' + "".join(f'<a href="{root}{h}">{t}</a>' for h, t in NAV_ZH) + '</nav>'
-            f'<span>價錢以 LINE 報價為準</span></div></footer>') if zh else (
+            f'<span>價錢以 LINE 報價為準{"｜本站用不使用 cookie 的訪客統計" if GOATCOUNTER else ""}</span></div></footer>') if zh else (
             f'<footer class="ft"><div class="wrap"><span>Kai-Chun Metal (開群金屬行), Alian District, Kaohsiung, Taiwan</span>'
             f'<span>Prices are quoted on LINE</span></div></footer>')
+    stats = (f'<script data-goatcounter="https://{GOATCOUNTER}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>'
+             if GOATCOUNTER else "")
+    body = mark_clicks(body + contact)
+    contact = ""
     return f'''<!DOCTYPE html>
 <html lang="{"zh-Hant-TW" if zh else "en"}">
 <head>
@@ -210,6 +237,7 @@ def layout(page, body, title, desc, root, lang="zh"):
 </main>
 {foot}
 <script src="{root}assets/site.js" defer></script>
+{stats}
 </body>
 </html>
 '''
@@ -271,6 +299,8 @@ def main():
     scene = read("src/scene.svg")
 
     common = {"{{LINE}}": LINE_ADD, "{{MAP}}": e(MAP), "{{SCENE}}": scene, "{{UPDATED}}": e(updated),
+              "{{FMT}}": e(parts_fmt("例 ALTIS 1.8 2013").replace("要什麼零件：", "要什麼零件：例 右前大燈", 1)),
+              "{{PARTS_LINE}}": e(line_msg(parts_fmt())),
               "{{N_MODELS}}": str(len(models)), "{{N_PARTS}}": str(len(parts)), "{{N_EXPORT}}": str(len(export))}
 
     def fill(text, extra):

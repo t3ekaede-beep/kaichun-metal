@@ -135,6 +135,7 @@ h3:first-child{margin-top:0}
 .copybox{border:2px solid var(--ink);border-radius:10px;overflow:hidden}
 .copyhead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
 .copyhead b{font-size:16px}
+.copyacts{display:flex;gap:8px;flex-wrap:wrap}
 .copyhead button{font:inherit;font-weight:700;font-size:15px;min-height:44px;padding:0 18px;border-radius:8px;border:0;background:var(--yel);color:var(--yk);cursor:pointer}
 pre{margin:0;padding:16px;font-family:inherit;font-size:16px;line-height:1.8;white-space:pre-wrap;overflow-x:auto}
 #copyMsg{font-size:14px;color:var(--ok);font-weight:700}
