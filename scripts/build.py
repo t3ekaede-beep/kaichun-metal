@@ -253,7 +253,7 @@ CONTACT_ZH = '''<section class="band contact" id="contact"><div class="wrap sec"
     <div><small>LINE ID</small><span>@375juggy</span></div>
     <div><small>營業時間</small><span class="nw">週一到週五 8:00–17:00</span><br><span class="nw">週六 10:00–17:00</span><br>中午 12:00–13:00 休息，週日公休</div>
     <div><small>地址</small><span>高雄市阿蓮區中正路 16 巷 3-90 號</span><br><a href="{{MAP}}">用 Google 地圖導航</a></div>
-    <div><small>付款</small><span>現金、轉帳</span><br>可以開發票</div>
+    <div><small>付款</small><span>現金、轉帳</span><br>不開統一發票，可開收據</div>
   </div>
 </div></section>'''
 
