@@ -55,7 +55,7 @@ jobs:
       - name: 整理要發布的檔案
         run: |
           mkdir -p _site
-          cp -r *.html en assets data og.png favicon.svg favicon-32.png apple-touch-icon.png robots.txt sitemap.xml .nojekyll _site/
+          cp -r *.html assets data og.png favicon.svg favicon-32.png apple-touch-icon.png robots.txt sitemap.xml .nojekyll _site/
 
       - uses: actions/upload-pages-artifact@v3
         with:
