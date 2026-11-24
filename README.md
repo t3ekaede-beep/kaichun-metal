@@ -11,7 +11,6 @@
 | 常收車款 | `models.html` | `src/models.html`＋`data/models.json` |
 | 客戶須知 | `guide.html` | `src/guide.html` |
 | 車場介紹 | `about.html` | `src/about.html` |
-| English | `en/index.html` | `src/en.html` |
 
 根目錄的 `.html` 都是產生出來的，**不要直接改**。改文字就改 `src/`，再跑 `python scripts/build.py`。
 

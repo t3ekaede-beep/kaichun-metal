@@ -159,7 +159,7 @@ SPRITE = ('<svg width="0" height="0" style="position:absolute" aria-hidden="true
           '<circle cx="76" cy="84" r="22" fill="currentColor"/><circle cx="234" cy="84" r="22" fill="currentColor"/></symbol></svg>')
 
 NAV_ZH = [("index.html", "首頁"), ("inventory.html", "場內車源"), ("models.html", "常收車款"),
-          ("guide.html", "客戶須知"), ("about.html", "車場介紹"), ("en/", "English")]
+          ("guide.html", "客戶須知"), ("about.html", "車場介紹")]
 NAV_EN = [("#stock", "Export stock"), ("#how", "How to buy"), ("#contact", "Contact"), ("../", "中文")]
 
 
@@ -183,8 +183,7 @@ def layout(page, body, title, desc, root, lang="zh"):
         f'<a href="{(root + h) if zh else h}"' + (' aria-current="page"' if h == page else "") + f'>{t}</a>'
         for h, t in nav)
     line_btn = mark_clicks(f'<a class="cta" href="{LINE_ADD}">{"LINE 詢價" if zh else "LINE"}</a>')
-    alt = (f'<link rel="alternate" hreflang="zh-Hant-TW" href="{BASE}">'
-           f'<link rel="alternate" hreflang="en" href="{BASE}en/">')
+    alt = ""
     contact = (CONTACT_ZH if zh else CONTACT_EN).replace("{{MAP}}", e(MAP)).replace("{{LINE_ADD}}", LINE_ADD)
     foot = (f'<footer class="ft"><div class="wrap"><span>開群金屬行｜高雄市阿蓮區中正路 16 巷 3-90 號</span>'
             f'<nav aria-label="頁尾">' + "".join(f'<a href="{root}{h}">{t}</a>' for h, t in NAV_ZH) + '</nav>'
@@ -274,7 +273,7 @@ CONTACT_EN = '''<section class="band contact" id="contact"><div class="wrap sec"
 JSONLD = ('<script type="application/ld+json">' + json.dumps({
     "@context": "https://schema.org", "@type": "AutoPartsStore", "name": "開群金屬行", "url": BASE,
     "image": BASE + "og.png",
-    "description": "高雄阿蓮的汽車回收場：中古零件、報廢車收購、機車殼廢料收購、外銷整車與引擎。",
+    "description": "高雄阿蓮的汽車回收場：中古零件、報廢車收購。",
     "address": {"@type": "PostalAddress", "streetAddress": "阿蓮里中正路16巷3-90號", "addressLocality": "阿蓮區",
                 "addressRegion": "高雄市", "postalCode": "822", "addressCountry": "TW"},
     "geo": {"@type": "GeoCoordinates", "latitude": 22.882908, "longitude": 120.3438987},
@@ -294,14 +293,15 @@ def main():
     inv = json.loads(read("data/inventory.json"))
     models = md["models"]
     by_name = {m["name"]: m for m in models}
-    parts, export = inv.get("parts", []), inv.get("export", [])
+    # 外銷已停做（2026-11-24）：Notion 裡被分到外銷的車也當零件車列
+    parts = inv.get("parts", []) + inv.get("export", [])
     updated = nice_time(inv.get("updated"))
     scene = read("src/scene.svg")
 
     common = {"{{LINE}}": LINE_ADD, "{{MAP}}": e(MAP), "{{SCENE}}": scene, "{{UPDATED}}": e(updated),
               "{{FMT}}": e(parts_fmt("例 ALTIS 1.8 2013").replace("要什麼零件：", "要什麼零件：例 右前大燈", 1)),
               "{{PARTS_LINE}}": e(line_msg(parts_fmt())),
-              "{{N_MODELS}}": str(len(models)), "{{N_PARTS}}": str(len(parts)), "{{N_EXPORT}}": str(len(export))}
+              "{{N_MODELS}}": str(len(models)), "{{N_PARTS}}": str(len(parts))}
 
     def fill(text, extra):
         for k, v in {**common, **extra}.items():
@@ -309,13 +309,10 @@ def main():
         return text
 
     # 首頁
-    shown = parts + export
-    if len(parts) >= MIN_SHOW or len(export) >= MIN_SHOW:
-        pool = (parts if len(parts) >= MIN_SHOW else []) + (export if len(export) >= MIN_SHOW else [])
-        home_inv = '<div class="cards">' + "".join(
-            car_card(c, by_name, "parts" if c in parts else "export") for c in pool[:HOME_INV]) + "</div>"
+    if len(parts) >= MIN_SHOW:
+        home_inv = '<div class="cards">' + "".join(car_card(c, by_name, "parts") for c in parts[:HOME_INV]) + "</div>"
     else:
-        home_inv = empty_state(len(shown), "parts")
+        home_inv = empty_state(len(parts), "parts")
     home_models = "".join(mini(m, "models.html") for m in models[:HOME_MODELS])
 
     # 常收車款篩選
@@ -327,35 +324,15 @@ def main():
     brand_chips = chips([(b, z.split("（")[0]) for b, z in brands])
     type_chips = chips([(t, t) for t in TYPES if any(m.get("type") == t for m in models)])
 
-    # 英文頁
-    def en_strip(key):
-        out = []
-        for m in models:
-            n = en_name(m)
-            if n and m.get(key, 0) >= 1:
-                out.append(mini(m, "#contact", f"{n} · {TIER_EN[m[key]]}"))
-        return "".join(out[:12])
-
-    if len(export) >= MIN_SHOW:
-        en_stock = '<div class="cards">' + "".join(
-            (f'<article class="card"><div class="ph">{photo(by_name.get(c.get("model") or ""), c.get("model") or "")}'
-             f'<span class="tag">{e(c.get("ref"))}</span></div><div class="cb"><h3>{e(en_name(by_name.get(c.get("model") or "", {"name": c.get("model") or ""})) or c.get("model"))} {e(c.get("year") or "")}</h3>'
-             f'<div class="meta">{e(TYPE_EN.get(c.get("type"), ""))}</div><div class="acts"><a class="btn sm" href="{e(line_msg("Hi, I am interested in export stock " + str(c.get("ref")) + "."))}">Ask on LINE</a></div></div></article>')
-            for c in export) + "</div>"
-    else:
-        en_stock = ('<div class="empty"><div class="big">Listing soon</div><div><b>Stock list coming soon</b>'
-                    '<p>We are photographing and listing the cars in our yard. Until the list is ready, tell us what you need on LINE and we will check.</p>'
-                    f'<div class="btns"><a class="btn sm dark" href="{e(line_msg("Hi, I am looking for: model / year / quantity / whole car or engine:"))}">Ask on LINE</a></div></div></div>')
-
     pages = [
-        ("index.html", "home.html", "開群金屬行｜高雄阿蓮汽車回收、中古零件、廢料收購",
-         "高雄阿蓮的汽車回收場：中古零件、報廢車收購、機車殼廢料、外銷整車與引擎。看場內車源和常收車款，LINE @375juggy 詢價。",
+        ("index.html", "home.html", "開群金屬行｜高雄阿蓮汽車回收、中古零件、報廢車收購",
+         "高雄阿蓮的汽車回收場：中古零件、報廢車收購。看場內車源和常收車款，LINE @375juggy 詢價。",
          {"{{HOME_INV}}": home_inv, "{{HOME_MODELS}}": home_models}),
         ("guide.html", "guide.html", "客戶須知｜開群金屬行",
-         "買中古零件怎麼報價、零件 7 天內退換、機車殼廢料怎麼賣、報廢車要帶什麼文件，一頁看完。", {}),
+         "買中古零件怎麼報價、零件 7 天內退換、報廢車要帶什麼文件，一頁看完。", {}),
         ("inventory.html", "inventory.html", "場內車源｜開群金屬行",
-         "開群金屬行場內現有的零件車和外銷整車，每天早上自動更新，看到想要的直接 LINE 問。",
-         {"{{INV_PARTS}}": inv_block(parts, by_name, "parts"), "{{INV_EXPORT}}": inv_block(export, by_name, "export")}),
+         "開群金屬行場內現有的零件車，每天早上自動更新，看到想要的直接 LINE 問。",
+         {"{{INV_PARTS}}": inv_block(parts, by_name, "parts")}),
         ("models.html", "models.html", "常收車款｜開群金屬行",
          f"開群金屬行常收的 {len(models)} 款車：ALTIS、CAMRY、VIOS、喜美、得利卡等，零件比較有機會有，LINE 直接問。",
          {"{{MODELS_GRID}}": "".join(model_card(m) for m in models), "{{BRAND_CHIPS}}": brand_chips, "{{TYPE_CHIPS}}": type_chips}),
@@ -366,18 +343,11 @@ def main():
         body = fill(read("src/" + src), extra)
         write(out, layout(out, body, title, desc, ""))
 
-    en_body = fill(read("src/en.html"), {"{{LINE_EN}}": e(line_msg("Hi, I am looking for: model / year / quantity / whole car or engine:")),
-                             "{{EN_WHOLE}}": en_strip("export_whole"), "{{EN_ENGINE}}": en_strip("export_engine"),
-                             "{{EN_STOCK}}": en_stock, "{{UPDATED_EN}}": e(nice_time(inv.get("updated"), en=True))})
-    write("en/index.html", layout("en/", en_body, "Kai-Chun Metal | Used cars and engines for export from Taiwan",
-                                  "Auto recycling yard in Kaohsiung, Taiwan supplying whole used cars and used engines for export. Toyota, Honda, Nissan, Mitsubishi. Contact on LINE @375juggy.",
-                                  "../", lang="en"))
-
-    urls = ["", "inventory.html", "models.html", "guide.html", "about.html", "en/"]
+    urls = ["", "inventory.html", "models.html", "guide.html", "about.html"]
     day = (inv.get("updated") or "")[:10]
     write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
           + "".join(f"<url><loc>{BASE}{u}</loc><lastmod>{day}</lastmod></url>" for u in urls) + "</urlset>\n")
-    print(f"網站產生完成：車款 {len(models)}、零件車 {len(parts)}、外銷車 {len(export)}")
+    print(f"網站產生完成：車款 {len(models)}、零件車 {len(parts)}")
 
 
 if __name__ == "__main__":
